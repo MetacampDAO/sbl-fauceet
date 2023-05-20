@@ -45,6 +45,7 @@ const Home: NextPage = () => {
             const rawTx = signedTx.serialize();
             const signature = await connection.sendRawTransaction(rawTx);
             setCfmSig(signature);
+            alert(`https://solana.fm/tx/${cfmSig}?cluster=devnet-qn1`);
         }
     };
     return (
