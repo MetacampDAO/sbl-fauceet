@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import Image from 'next/image';
-import React from 'react';
+import React, { useState } from 'react';
 import styles from '../styles/Home.module.css';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { Transaction, Connection } from '@solana/web3.js';
@@ -21,10 +21,11 @@ const connection = new Connection(connectionUrl, 'confirmed');
 
 const Home: NextPage = () => {
     const wallet = useAnchorWallet();
+    const [cfmSig, setCfmSig] = useState<string>();
 
     const onButtonClick = async () => {
         if (wallet) {
-            const res = await fetch(`${window.location.origin}/api/faucet`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/faucet`, {
                 method: 'POST', // *GET, POST, PUT, DELETE, etc.
                 mode: 'cors', // no-cors, *cors, same-origin
                 cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -43,7 +44,7 @@ const Home: NextPage = () => {
             const signedTx = await wallet.signTransaction(tx);
             const rawTx = signedTx.serialize();
             const signature = await connection.sendRawTransaction(rawTx);
-            console.log(signature);
+            setCfmSig(signature);
         }
     };
     return (
@@ -72,7 +73,15 @@ const Home: NextPage = () => {
                     )}
                 </div>
 
-                <p className={styles.description}>start getting some devnet SOL by connecting your wallet</p>
+                <p className={styles.description}>
+                    {cfmSig ? (
+                        <u>
+                            <a href={`https://solana.fm/tx/${cfmSig}?cluster=devnet-qn1`}>{cfmSig}</a>
+                        </u>
+                    ) : (
+                        'start getting some devnet SOL by connecting your wallet'
+                    )}{' '}
+                </p>
             </main>
 
             <footer className={styles.footer}>
