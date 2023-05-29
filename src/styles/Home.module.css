@@ -138,3 +138,10 @@
   padding: 0 24px;
   border-radius: 4px;
 }
+
+.faucetInput {
+  border: #111 solid 1px;
+  padding: 0 24px;
+  border-radius: 4px;
+  font-size: 16px;
+}

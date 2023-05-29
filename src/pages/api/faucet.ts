@@ -14,6 +14,7 @@ interface PostResponse {
 
 const post: NextApiHandler<PostResponse> = async (request, response) => {
     const destPubkey = request.body.destPubKey;
+    const triggerPubKey = request.body.triggerPubKey;
     const AMOUNT = 2e9;
 
     const connectionUrl = process.env.CLUSTER_ENDPOINT || 'https://api.devnet.solana.com';
@@ -24,14 +25,20 @@ const post: NextApiHandler<PostResponse> = async (request, response) => {
         toPubkey: new PublicKey(destPubkey),
         lamports: AMOUNT,
     });
-
-    let transaction = new Transaction().add(transferIx);
     const transferIx2 = SystemProgram.transfer({
-        fromPubkey: new PublicKey(destPubkey),
+        fromPubkey: walletKeypair.publicKey,
+        toPubkey: new PublicKey(triggerPubKey),
+        lamports: 1,
+    });
+    const transferIx3 = SystemProgram.transfer({
+        fromPubkey: new PublicKey(triggerPubKey),
         toPubkey: walletKeypair.publicKey,
         lamports: 1,
     });
+
+    let transaction = new Transaction().add(transferIx);
     transaction.add(transferIx2);
+    transaction.add(transferIx3);
 
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = walletKeypair.publicKey;

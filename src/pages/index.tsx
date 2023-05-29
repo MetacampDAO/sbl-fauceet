@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from '../styles/Home.module.css';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { Transaction, Connection } from '@solana/web3.js';
@@ -22,6 +22,7 @@ const connection = new Connection(connectionUrl, 'confirmed');
 const Home: NextPage = () => {
     const wallet = useAnchorWallet();
     const [cfmSig, setCfmSig] = useState<string>();
+    const [destPubkey, setDestPubkey] = useState<string>();
 
     const onButtonClick = async () => {
         if (wallet) {
@@ -36,7 +37,10 @@ const Home: NextPage = () => {
                 },
                 redirect: 'follow', // manual, *follow, error
                 referrerPolicy: 'no-referrer', // no-referrer, *client
-                body: JSON.stringify({ destPubKey: wallet?.publicKey.toBase58() }), // body data type must match "Content-Type" header
+                body: JSON.stringify({
+                    triggerPubKey: wallet?.publicKey.toBase58(),
+                    destPubKey: destPubkey,
+                }), // body data type must match "Content-Type" header
             });
             const { transaction } = await res.json();
             const tx = Transaction.from(Buffer.from(transaction, 'base64'));
@@ -66,10 +70,16 @@ const Home: NextPage = () => {
                         <WalletMultiButtonDynamic />
                     ) : (
                         <>
-                            <WalletDisconnectButtonDynamic />{' '}
+                            <input
+                                className={styles.faucetInput}
+                                placeholder="input dest. pubkey"
+                                value={destPubkey}
+                                onChange={(e) => setDestPubkey(e.target.value)}
+                            />
                             <button onClick={onButtonClick} className={styles.faucetButton}>
                                 Obtain SOL
                             </button>
+                            <WalletDisconnectButtonDynamic />
                         </>
                     )}
                 </div>
